@@ -767,6 +767,16 @@ weechat.controller('WeechatCtrl', ['$rootScope', '$scope', '$store', '$timeout',
         }
     };
 
+    $scope.checkWebPush = function() {
+      try {
+        var webPush = JSON.parse(localStorage['subscriptionInfo']);
+
+        return false;
+      } catch(e) {
+        return true;
+      }
+    };
+
     $rootScope.supports_formatting_date = (function() {
         // function toLocaleDateStringSupportsLocales taken from MDN:
         // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString#Checking_for_support_for_locales_and_options_arguments

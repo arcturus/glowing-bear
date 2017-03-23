@@ -484,6 +484,29 @@ npm run build-electron-{windows, darwin, linux}</pre>
                   </div>
                 </form>
               </li>
+              <li ng-disabled="checkWebPush()">
+                <p>WebPush information</p>
+                <form class="form-horizontal" role="form">
+                  <div class="form-group">
+                    <label for="endpoint" class="col-sm-3 control-label make-thinner">Endpoint</label>
+                    <div class="col-sm-7">
+                      <input readonly type="text" id="endpoint" class="form-control" ng-model="settings.subscriptionInfo.endpoint">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="key" class="col-sm-3 control-label make-thinner">Key</label>
+                    <div class="col-sm-7">
+                      <input readonly type="text" id="key" class="form-control" ng-model="settings.subscriptionInfo.key">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="authSecret" class="col-sm-3 control-label make-thinner">AuthSecret</label>
+                    <div class="col-sm-7">
+                      <input readonly type="text" id="authSecret" class="form-control" ng-model="settings.subscriptionInfo.authSecret">
+                    </div>
+                  </div>
+                </form>
+              </li>
             </ul>
           </div>
           <div class="modal-footer">
