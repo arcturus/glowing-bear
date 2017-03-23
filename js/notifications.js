@@ -27,9 +27,40 @@ weechat.factory('notifications', ['$rootScope', '$log', 'models', 'settings', fu
         // Check for serviceWorker support, and also disable serviceWorker if we're running in electron process, since that's just problematic and not necessary, since gb then already is in a separate process
         if ('serviceWorker' in navigator && window.is_electron !== 1) {
             $log.info('Service Worker is supported');
-            navigator.serviceWorker.register('serviceworker.js').then(function(reg) {
-                $log.info('Service Worker install:', reg);
+            navigator.serviceWorker.register('serviceworker.js').then(function(registration) {
+                $log.info('Service Worker install:', registration);
                 serviceworker = true;
+                registration.pushManager.getSubscription()
+                  .then((subscription) => {
+                    if (subscription) {
+                      return subscription;
+                    }
+
+                    return registration.pushManager.subscribe({ userVisibleOnly: true });
+                  })
+                  .then((subscription) => {
+                    var rawKey = subscription.getKey ? subscription.getKey('p256dh') : '';
+                    var key = rawKey ?
+                      btoa(String.fromCharCode.apply(null, new Uint8Array(rawKey))) :
+                      '';
+                    var rawAuthSecret = subscription.getKey ? subscription.getKey('auth') : '';
+                    var authSecret = rawAuthSecret ?
+                      btoa(String.fromCharCode.apply(null, new Uint8Array(rawAuthSecret))) :
+                      '';
+                    var endpoint = subscription.endpoint;
+
+                    var subscriptionInfo = {
+                      endpoint: endpoint,
+                      authSecret: authSecret,
+                      key: key
+                    };
+
+                    return subscriptionInfo;
+                  })
+                  .then((subscriptionInfo) => {
+                    localStorage['subscriptionInfo'] = JSON.stringify(subscriptionInfo);
+                    $log.info('Subscription Info is: ', subscriptionInfo);
+                  });
             }).catch(function(err) {
                 $log.info('Service Worker err:', err);
             });
