@@ -11,13 +11,19 @@ this.addEventListener('install', function(event) {
 });
 
 this.addEventListener('push', function(event) {
-    // TODO, support GCM here
-    var title = 'Push message';
+    var title = 'Private message';
+    // event.data is an structure like:
+    // {
+    //   channel: 'nickname',
+    //   msg: 'the message'
+    // }
+    var json = event.data.json();
+    var msg = json.channel + ': ' + json.msg;
     event.waitUntil(
         self.registration.showNotification(title, {
-          body: 'The Message',
+          body: msg,
           icon: 'assets/img/favicon.png',
-          tag: 'my-tag'
+          tag: 'pvt-tag'
         }));
 });
 
