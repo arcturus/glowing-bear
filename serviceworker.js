@@ -11,20 +11,34 @@ this.addEventListener('install', function(event) {
 });
 
 this.addEventListener('push', function(event) {
-    var title = 'Private message';
-    // event.data is an structure like:
-    // {
-    //   channel: 'nickname',
-    //   msg: 'the message'
-    // }
-    var json = event.data.json();
-    var msg = json.channel + ': ' + json.msg;
-    event.waitUntil(
+    // If there is a tab already open we just let
+    // the standard desktop notifications to go ahead
+    // with the notification. We will use the push events
+    // just in the case there is not tab open to spawn one
+    // tab
+    event.waintUntil(clients.matchAll({
+        type: "window"
+    })).then(function(clientList) {
+        if (isClientOpen(clientList)) {
+            return Promise.resolve();
+        }
+
+        var title = 'Private message';
+        // event.data is an structure like:
+        // {
+        //   channel: 'nickname',
+        //   msg: 'the message'
+        // }
+        var json = event.data.json();
+        var msg = json.channel + ': ' + json.msg;
+
         self.registration.showNotification(title, {
           body: msg,
           icon: 'assets/img/favicon.png',
           tag: 'pvt-tag'
-        }));
+        });
+    });
+    
 });
 
 this.onnotificationclick = function(event) {
@@ -32,21 +46,16 @@ this.onnotificationclick = function(event) {
     // See: http://crbug.com/463146
     event.notification.close();
 
-    // This looks to see if the current is already open and
-    // focuses if it is
-    event.waitUntil(clients.matchAll({
-        type: "window"
-    }).then(function(clientList) {
-        for (var i = 0; i < clientList.length; i++) {
-            var client = clientList[i];
-            if ('focus' in client) {
-                return client.focus();
-            }
-        }
-        /*
-        if (clients.openWindow) {
-            return clients.openWindow('/glowing-bear/');
-        }
-        */
-    }));
+    event.waitUntil(clients.openWindow(self.registration.scope));
 };
+
+/**
+ * Helper function tell us if there is already
+ * a tab open being controlled by the serviceworker
+ */
+function isClientOpen(clients) {
+  var origin = self.registration.scope;
+  return clients.find(function(client) {
+    return client.url.indexOf(origin) == 0;
+  }) != null;
+}
