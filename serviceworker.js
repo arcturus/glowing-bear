@@ -16,9 +16,9 @@ this.addEventListener('push', function(event) {
     // with the notification. We will use the push events
     // just in the case there is not tab open to spawn one
     // tab
-    event.waintUntil(clients.matchAll({
+    event.waitUntil(clients.matchAll({
         type: "window"
-    })).then(function(clientList) {
+    }).then(function(clientList) {
         if (isClientOpen(clientList)) {
             return Promise.resolve();
         }
@@ -32,11 +32,13 @@ this.addEventListener('push', function(event) {
         var json = event.data.json();
         var msg = json.channel + ': ' + json.msg;
 
-        self.registration.showNotification(title, {
+        return self.registration.showNotification(title, {
           body: msg,
           icon: 'assets/img/favicon.png',
           tag: 'pvt-tag'
         });
+    })).catch(function(error) {
+        console.error(error);
     });
     
 });
@@ -46,7 +48,22 @@ this.onnotificationclick = function(event) {
     // See: http://crbug.com/463146
     event.notification.close();
 
-    event.waitUntil(clients.openWindow(self.registration.scope));
+    event.waitUntil(clients.matchAll({
+        type: "window"
+    }).then(function(clientList) {
+        if (isClientOpen(clientList)) {
+            // Focus in the client already opened
+            var wnd = clientList.find(function(cl) {
+                return cl.url.indexOf(self.registration.scope) == 0;
+            });
+            if (wnd && 'focus' in wnd) {
+                wnd.focus();
+            }
+            return Promise.resolve();
+        } else {
+            return clients.openWindow(self.registration.scope)
+        }
+    }));
 };
 
 /**
